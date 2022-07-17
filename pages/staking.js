@@ -2952,7 +2952,7 @@ const Staking = () => {
 
     try {
       toast.info(`Unstaking ${filtered.length} Nfts.`);
-      const unstake = await contract?.unstakeTokens(filtered);
+      const unstake = await contract?.emergencyUnstake(filtered);
       await unstake.wait();
       toast.success(`${filtered.length} Nfts successfully unstaked.`);
       getHarmoleculesNFT();

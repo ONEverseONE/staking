@@ -1749,9 +1749,12 @@ const Staking = () => {
     setLoading2(true);
 
     let provider = new ethers.providers.JsonRpcProvider(
-    //   "https://rpc.hermesdefi.io/"
+      //   "https://rpc.hermesdefi.io/"
       "https://rpc.ankr.com/harmony"
     );
+
+    const imageURL =
+      "https://harmolecules.mypinata.cloud/ipfs/QmUn7JpGbzFG3xUTMKmeU724HZnF21kNwxQuB6yLm7qAF3/";
 
     //Contract
     const contract = new ethers.Contract(nftAddress, nftABI, provider);
@@ -1797,7 +1800,7 @@ const Staking = () => {
             id: element,
             name: json.name,
             key: json.dna,
-            url: json.image,
+            url: `${imageURL}${element}.png`,
           };
           // return {
           //   id: element,
@@ -1830,7 +1833,7 @@ const Staking = () => {
           id: element,
           name: json.name,
           key: json.dna,
-          url: json.image,
+          url: `${imageURL}${element}.png`,
         };
       });
       result = await Promise.all(stakedPromises);
@@ -1877,28 +1880,31 @@ const Staking = () => {
     } catch (err) {
       console.log(err);
     }
-    axios.get("https://oneverse-backend.onrender.com/price").then((res) => {
-      const data = res.data;
-      const multiplier = data.decrease;
-      const _totalRewards = sumUpRewards * multiplier;
-      const _finalRewards = finalRewards.map((e) => {
-        e.rewards *= multiplier;
-        return e;
-      });
-      dispatch({
-        type: "SET_REWARD_ITEMS",
-        rewardItems: _finalRewards,
-      });
-      dispatch({
-        type: "SET_TOTAL_REWARDS",
-        totalRewards: _totalRewards,
-      });
-      setLoading2(false);
-    });
+    // axios.get("https://oneverse-backend.onrender.com/price").then((res) => {
+    //   const data = res.data;
+    //   const multiplier = data.decrease;
+    //   const _totalRewards = sumUpRewards * multiplier;
+    //   const _finalRewards = finalRewards.map((e) => {
+    //     e.rewards *= multiplier;
+    //     return e;
+    //   });
+    //   dispatch({
+    //     type: "SET_REWARD_ITEMS",
+    //     rewardItems: _finalRewards,
+    //   });
+    //   dispatch({
+    //     type: "SET_TOTAL_REWARDS",
+    //     totalRewards: _totalRewards,
+    //   });
+    //   setLoading2(false);
+    // });
   };
 
   const getHarmoleculesNFT = async () => {
     console.log("H");
+    const imageURL =
+      "https://harmolecules.mypinata.cloud/ipfs/QmTdSaXrVuNh2BjPhDPVqCmx2tpYuhn6rpuXJJydkAUKtY/";
+
     const defaultUri =
       "https://harmolecules.mypinata.cloud/ipfs/QmTQfazmn4sXcte6TjVmY7NkxNqj8meqjpXxtC2xuzg6cA/1.json";
 
@@ -1960,7 +1966,7 @@ const Staking = () => {
             id: element,
             name: uri ? json.name : `#${element}`,
             key: json.dna,
-            url: json.image,
+            url: `${imageURL}${element}.png`,
           };
           // return {
           //   id: element,
@@ -1995,7 +2001,7 @@ const Staking = () => {
           id: element,
           name: uri ? json.name : `#${element}`,
           key: json.dna,
-          url: json.image,
+          url: `${imageURL}${element}.png`,
         };
       });
       const result = await Promise.all(stakedPromises);
@@ -2227,6 +2233,7 @@ const Staking = () => {
         .rewardRate()
         .call({ from: address });
       const parsedRewardRate = parseInt(rewardRate);
+      console.log(parsedRewardRate, "prr");
 
       const totalReward = parsedRewardRate * 60 * 60 * 24 * 365; // Reward in an year
 
@@ -2237,6 +2244,7 @@ const Staking = () => {
         "0x0000000000000000000000000000000000000000000000000000000000000007"
       );
       const parsedTokens = parseInt(totalTokensStaked);
+      console.log("totalTokensStaked here", parsedTokens / 1e18);
       const apr = (totalReward / parsedTokens) * 100;
       setAPR(apr.toFixed(2));
     } catch (e) {
@@ -2703,12 +2711,6 @@ const Staking = () => {
     let filtered = stakedItems.filter(isSelected).map((a) => a.id);
 
     try {
-      const webRequest = await axios.get(
-        "https://oneverse-backend.onrender.com/price"
-      );
-      const { signature, address, types, voucher, finalPrice } =
-        webRequest.data;
-
       const ethers = require("ethers");
 
       await window.ethereum.request({
@@ -2725,9 +2727,7 @@ const Staking = () => {
         nftContractAddress
       );
       const transaction = await _nftContract.methods
-        ?.emergencyUnstake(
-          filtered.map((e) => e.toString())
-        )
+        ?.emergencyUnstake(filtered.map((e) => e.toString()))
         .send({ from: add, gas: 8000000 });
 
       toast.success(`${filtered.length} NFts were successfully unstaked.`);
@@ -3990,7 +3990,7 @@ const Staking = () => {
                             {loading ? (
                               <Box alignItems="center" justify="center">
                                 <CircularProgress
-                                  color="#E9D758"
+                                  color="secondary"
                                   size={20}
                                   style={{ marginRight: 10, marginTop: 20 }}
                                 />
@@ -4131,23 +4131,24 @@ const Staking = () => {
                               ))
                             )}
                           </Box>
-                          {/* <Box display="flex" justifyContent="end">
+                          <Box display="flex" justifyContent="end">
                             <Button
                               onClick={nftStake}
                               className={classes.nftStakeBtn}
+                              disabled={true}
                             >
-                              STAKE{" "}
-                              {checkedItems &&
+                              STAKING{" "}
+                              {/* {checkedItems &&
                               Object.values(checkedItems).filter(
                                 (item) => item === true
                               ).length
                                 ? Object.values(checkedItems).filter(
                                     (item) => item === true
                                   ).length
-                                : ""}{" "}
-                              NFT
+                                : ""}{" "} */}
+                              DISABLED
                             </Button>
-                          </Box>  */}
+                          </Box>
                         </TabPanel>
                         <TabPanel value={tabVal} index={1}>
                           <Box display="flex" justifyContent="end">
@@ -4188,7 +4189,7 @@ const Staking = () => {
                             {loading1 ? (
                               <Box alignItems="center" justify="center">
                                 <CircularProgress
-                                  color="#E9D758"
+                                  color="secondary"
                                   size={20}
                                   style={{ marginRight: 10, marginTop: 20 }}
                                 />
@@ -4384,10 +4385,10 @@ const Staking = () => {
                             className={classes.nftScroll}
                             id="nft-scroll-rewards"
                           >
-                            {loading2 ? (
+                            {/* {loading2 ? (
                               <Box alignItems="center" justify="center">
                                 <CircularProgress
-                                  color="#E9D758"
+                                  color="secondary"
                                   size={20}
                                   style={{ marginRight: 10, marginTop: 20 }}
                                 />
@@ -4531,7 +4532,8 @@ const Staking = () => {
                                   </Box>
                                 </LazyLoad>
                               ))
-                            )}
+                            )} */}
+                            Rewards Disabled
                           </Box>
                           <Box display="flex" justifyContent="space-between">
                             <Box className={classes.totalBlock}>
@@ -4545,6 +4547,7 @@ const Staking = () => {
                             <Button
                               onClick={nftClaim}
                               className={classes.nftStakeBtn}
+                              disabled={true}
                             >
                               CLAIM
                             </Button>
@@ -4770,17 +4773,18 @@ const Staking = () => {
                             <Button
                               onClick={rarityStake}
                               className={classes.nftStakeBtn}
+                              disabled={true}
                             >
-                              STAKE{" "}
-                              {checkedItems3 &&
+                              STAKING{" "}
+                              {/* {checkedItems3 &&
                               Object.values(checkedItems3).filter(
                                 (item) => item === true
                               ).length
                                 ? Object.values(checkedItems3).filter(
                                     (item) => item === true
                                   ).length
-                                : ""}{" "}
-                              NFT
+                                : ""}{" "} */}
+                              DISABLED
                             </Button>
                           </Box>
                         </TabPanel>
@@ -5356,7 +5360,9 @@ const Staking = () => {
                         marginLeft: "20px",
                       }}
                     >
-                      {parseFloat(lockStakedAmount).toFixed(4)}
+                      {isNaN(parseFloat(lockStakedAmount).toFixed(4))
+                        ? "-"
+                        : parseFloat(lockStakedAmount).toFixed(4)}
                     </span>
                   </Typography>
                 </Grid>
@@ -6113,7 +6119,9 @@ const Staking = () => {
                           TOTAL STAKED GRAVS
                         </Typography>
                         <Typography className={classes.bigNumber}>
-                          {parseInt(totalGravsStaked)}
+                          {isNaN(parseInt(totalGravsStaked))
+                            ? "-"
+                            : parseInt(totalGravsStaked)}
                         </Typography>
                       </Box>
                       <Box
@@ -6127,7 +6135,9 @@ const Staking = () => {
                           YOUR STAKED GRAVS
                         </Typography>
                         <Typography className={classes.bigNumber}>
-                          {parseInt(totalAmountLocked)}
+                          {isNaN(parseInt(totalAmountLocked))
+                            ? "-"
+                            : parseInt(totalAmountLocked)}
                         </Typography>
                       </Box>
                       <Box
@@ -6141,7 +6151,9 @@ const Staking = () => {
                           UNCLAIMED REWARDS
                         </Typography>
                         <Typography className={classes.bigNumber}>
-                          {parseFloat(totalRewardsLocked).toFixed(4)}
+                          {isNaN(parseFloat(totalRewardsLocked).toFixed(4))
+                            ? "-"
+                            : parseFloat(totalRewardsLocked).toFixed(4)}
                         </Typography>
                       </Box>
                     </Box>
